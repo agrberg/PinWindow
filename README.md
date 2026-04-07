@@ -9,6 +9,13 @@ Keep any macOS window always on top — a free, open-source alternative to Recta
 
 > **[Download PinWindow-1.0.dmg](https://github.com/justwy/PinWindow/releases/latest/download/PinWindow-1.0.dmg)** (100 KB) — signed and notarized, no Gatekeeper warnings.
 
+### Install via Homebrew
+
+```bash
+brew tap justwy/pinwindow
+brew install --cask pinwindow
+```
+
 ## How It Works
 
 There's no public macOS API to change another app's window level. PinWindow works around this by creating a **live pixel-perfect mirror** of the target window using ScreenCaptureKit, displayed in a floating overlay panel that passes all mouse events through to the real window underneath.
