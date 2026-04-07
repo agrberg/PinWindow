@@ -1,8 +1,10 @@
 # Build artifacts
 PinWindow.app/
-pin
+/pin
 dist/
 *.dmg
+*.dSYM
 
 # macOS
 .DS_Store
+._*
