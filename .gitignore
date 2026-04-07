@@ -1,0 +1,8 @@
+# Build artifacts
+PinWindow.app/
+pin
+dist/
+*.dmg
+
+# macOS
+.DS_Store
