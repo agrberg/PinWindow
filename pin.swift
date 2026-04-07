@@ -671,6 +671,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         PinManager.shared.unpinAll()
     }
 
+    @objc func openSupportPage() {
+        NSWorkspace.shared.open(URL(string: "https://buymeacoffee.com/justwyo")!)
+    }
+
     // MARK: - NSMenuDelegate
 
     func menuNeedsUpdate(_ menu: NSMenu) {
@@ -763,6 +767,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             unpinAll.target = self
             menu.addItem(unpinAll)
         }
+
+        menu.addItem(.separator())
+
+        let support = NSMenuItem(title: "Support PinWindow...", action: #selector(openSupportPage), keyEquivalent: "")
+        support.target = self
+        menu.addItem(support)
 
         menu.addItem(.separator())
         menu.addItem(withTitle: "Quit PinWindow", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
