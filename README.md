@@ -1,6 +1,13 @@
 # PinWindow
 
+[![Download](https://img.shields.io/github/v/release/justwy/PinWindow?label=Download&style=for-the-badge)](https://github.com/justwy/PinWindow/releases/latest/download/PinWindow-1.0.dmg)
+[![GitHub Release](https://img.shields.io/github/v/release/justwy/PinWindow?style=flat-square)](https://github.com/justwy/PinWindow/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-orange?style=flat-square&logo=buy-me-a-coffee)](https://buymeacoffee.com/justwyo)
+
 Keep any macOS window always on top — a free, open-source alternative to Rectangle Pro's pinning feature.
+
+> **[Download PinWindow-1.0.dmg](https://github.com/justwy/PinWindow/releases/latest/download/PinWindow-1.0.dmg)** (100 KB) — signed and notarized, no Gatekeeper warnings.
 
 ## How It Works
 
