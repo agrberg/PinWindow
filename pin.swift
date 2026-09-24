@@ -7,7 +7,6 @@ import AVFoundation
 
 class CaptureManager: NSObject, SCStreamDelegate, SCStreamOutput {
     let videoLayer = AVSampleBufferDisplayLayer()
-    var staticLayer: CALayer?
     private var stream: SCStream?
     var capturing = false
     var onError: (() -> Void)?
@@ -60,22 +59,19 @@ class CaptureManager: NSObject, SCStreamDelegate, SCStreamOutput {
 
     func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of outputType: SCStreamOutputType) {
         guard sampleBuffer.isValid, outputType == .screen else { return }
+        // SCK delivers idle/blank frames on every tick even when the window hasn't
+        // changed; skip anything that isn't a fully rendered frame.
+        guard let attachmentsArray = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false) as? [[SCStreamFrameInfo: Any]],
+              let attachments = attachmentsArray.first,
+              let statusRawValue = attachments[SCStreamFrameInfo.status] as? Int,
+              let status = SCFrameStatus(rawValue: statusRawValue),
+              status == .complete else { return }
+
         DispatchQueue.main.async {
             if #available(macOS 15, *) {
                 self.videoLayer.sampleBufferRenderer.enqueue(sampleBuffer)
             } else {
                 self.videoLayer.enqueue(sampleBuffer)
-            }
-            if let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
-               let sl = self.staticLayer {
-                let ciImage = CIImage(cvPixelBuffer: imageBuffer)
-                let context = CIContext()
-                if let cgImage = context.createCGImage(ciImage, from: ciImage.extent) {
-                    CATransaction.begin()
-                    CATransaction.setDisableActions(true)
-                    sl.contents = cgImage
-                    CATransaction.commit()
-                }
             }
         }
     }
@@ -116,6 +112,7 @@ class MirrorPanel {
     private var axObserver: AXObserver?
     private var aliveTimer: Timer?
     private var clickMonitor: Any?
+    private var resizeDebounce: DispatchWorkItem?
 
     init(scWindow: SCWindow) {
         self.scWindow = scWindow
@@ -139,13 +136,6 @@ class MirrorPanel {
         view.wantsLayer = true
         view.layer?.cornerRadius = 10
         view.layer?.masksToBounds = true
-
-        let staticLayer = CALayer()
-        staticLayer.frame = view.bounds
-        staticLayer.autoresizingMask = [.layerWidthSizable, .layerHeightSizable]
-        staticLayer.backgroundColor = NSColor.clear.cgColor
-        view.layer?.addSublayer(staticLayer)
-        capture.staticLayer = staticLayer
 
         let videoLayer = capture.videoLayer
         videoLayer.frame = view.bounds
@@ -181,6 +171,8 @@ class MirrorPanel {
     func stop() {
         aliveTimer?.invalidate()
         aliveTimer = nil
+        resizeDebounce?.cancel()
+        resizeDebounce = nil
         if let monitor = clickMonitor {
             NSEvent.removeMonitor(monitor)
             clickMonitor = nil
@@ -245,8 +237,17 @@ class MirrorPanel {
         let nsFrame = cgToNS(cgFrame)
 
         if panel.frame.size != nsFrame.size {
+            // A resize drag fires this on every AX notification; debounce so we don't
+            // reconfigure the stream dozens of times over the course of one drag.
+            resizeDebounce?.cancel()
             let scale = NSScreen.main?.backingScaleFactor ?? 2.0
-            capture.updateCaptureSize(width: Int(nsFrame.width * scale), height: Int(nsFrame.height * scale))
+            let width = Int(nsFrame.width * scale)
+            let height = Int(nsFrame.height * scale)
+            let work = DispatchWorkItem { [weak self] in
+                self?.capture.updateCaptureSize(width: width, height: height)
+            }
+            resizeDebounce = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: work)
         }
         if panel.frame != nsFrame {
             CATransaction.begin()
