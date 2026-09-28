@@ -98,10 +98,10 @@ Apple's direction is toward more frequent permission re-authorization. The app s
 
 ## Known Limitations
 
-1. **Fully obscured windows** — if the real window is completely covered, macOS may throttle its rendering, causing the mirror to show a stale frame. The static fallback layer preserves the last good frame.
+1. **Fully obscured windows** — if the real window is completely covered, macOS may throttle its rendering. `AVSampleBufferDisplayLayer` keeps its last enqueued frame on screen on its own, so the mirror shows the last good frame without any extra fallback layer.
 
 2. **Spaces** — the mirror panel uses `.canJoinAllSpaces` so it appears on all desktops. The real window only exists on one space. If the user switches spaces, the mirror shows but clicks go nowhere.
 
 3. **Full-screen apps** — full-screen windows use a separate space. The mirror cannot float above a full-screen app.
 
-4. **Performance** — each pinned window runs a 60fps SCStream capture. Pinning many windows simultaneously will increase GPU/CPU usage.
+4. **Performance** — each pinned window runs a 60fps SCStream capture, but `didOutputSampleBuffer` drops any frame whose `SCStreamFrameInfo.status` is not `.complete`. A static window sends almost no complete frames, so CPU use stays near zero until its content actually changes. Pinning many windows that are all actively changing at once will still increase GPU/CPU usage.

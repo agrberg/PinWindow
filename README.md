@@ -140,7 +140,7 @@ The entire app is a single Swift file (`pin.swift`, ~800 lines):
 
 | Component | Role |
 |---|---|
-| `CaptureManager` | Wraps `SCStream` for 60fps window capture with a static fallback layer |
+| `CaptureManager` | Wraps `SCStream` for 60fps window capture, filtering to complete frames only |
 | `MirrorPanel` | `NSPanel` overlay that displays the capture, syncs position via `AXObserver`, detects clicks to activate the real window |
 | `PinManager` | Singleton managing all mirrors — pin/unpin by name, PID, or window ID |
 | `AppDelegate` | Menu bar UI with dynamic `NSMenuDelegate`, CLI argument handling, permission requests |
